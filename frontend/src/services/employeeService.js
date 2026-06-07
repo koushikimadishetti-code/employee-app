@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'http://localhost:8080/api/employees';
-
+const BASE_URL = 'https://employee-app-production.up.railway.app/api/employees';
 const employeeService = {
   getAll: () => axios.get(BASE_URL),
 
