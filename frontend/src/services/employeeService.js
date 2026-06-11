@@ -1,20 +1,15 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://employee-app-production.up.railway.app/api/employees';
-const employeeService = {
-  getAll: () => axios.get(BASE_URL),
+const API = '/api/employees';
 
-  getById: (id) => axios.get(`${BASE_URL}/${id}`),
+const getHeaders = () => ({
+  headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+});
 
-  create: (employee) => axios.post(BASE_URL, employee),
-
-  update: (id, employee) => axios.put(`${BASE_URL}/${id}`, employee),
-
-  delete: (id) => axios.delete(`${BASE_URL}/${id}`),
-
-  search: (query) => axios.get(`${BASE_URL}/search?query=${query}`),
-
-  getByDepartment: (dept) => axios.get(`${BASE_URL}/department/${dept}`),
-};
-
-export default employeeService;
+export const getAllEmployees    = ()       => axios.get(API, getHeaders());
+export const getEmployee        = (id)     => axios.get(`${API}/${id}`, getHeaders());
+export const createEmployee     = (data)   => axios.post(API, data, getHeaders());
+export const updateEmployee     = (id, data) => axios.put(`${API}/${id}`, data, getHeaders());
+export const deleteEmployee     = (id)     => axios.delete(`${API}/${id}`, getHeaders());
+export const searchEmployees    = (query)  => axios.get(`${API}/search?query=${query}`, getHeaders());
+export const getByDepartment    = (dept)   => axios.get(`${API}/department/${dept}`, getHeaders());

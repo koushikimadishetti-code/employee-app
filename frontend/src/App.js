@@ -1,131 +1,84 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
+import LoginPage     from './components/LoginPage';
 import EmployeeTable from './components/EmployeeTable';
-import EmployeeForm from './components/EmployeeForm';
-import employeeService from './services/employeeService';
+import EmployeeForm  from './components/EmployeeForm';
 import './App.css';
 
-export default function App() {
-  const [employees, setEmployees] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [toast, setToast] = useState(null);
+function App() {
+  const [user, setUser] = useState(null);
+  const [view, setView] = useState('list');        // 'list' | 'form'
+  const [editEmployee, setEditEmployee] = useState(null);
 
-  const showToast = (message, type = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  const fetchEmployees = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = searchQuery
-        ? await employeeService.search(searchQuery)
-        : await employeeService.getAll();
-      setEmployees(res.data);
-    } catch (err) {
-      showToast('Failed to load employees', 'error');
-    } finally {
-      setLoading(false);
-    }
-  }, [searchQuery]);
-
+  // Restore session on page reload
   useEffect(() => {
-    const delay = setTimeout(fetchEmployees, 300);
-    return () => clearTimeout(delay);
-  }, [fetchEmployees]);
+    const token    = localStorage.getItem('token');
+    const role     = localStorage.getItem('role');
+    const username = localStorage.getItem('username');
+    if (token && role) setUser({ token, role, username });
+  }, []);
 
-  const handleAdd = () => {
-    setSelectedEmployee(null);
-    setShowForm(true);
+  const handleLogin  = (data) => setUser(data);
+  const handleLogout = () => {
+    localStorage.clear();
+    setUser(null);
+    setView('list');
+    setEditEmployee(null);
   };
 
-  const handleEdit = (employee) => {
-    setSelectedEmployee(employee);
-    setShowForm(true);
-  };
+  // Not logged in → show login page
+  if (!user) return <LoginPage onLogin={handleLogin} />;
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this employee?')) return;
-    try {
-      await employeeService.delete(id);
-      showToast('Employee deleted successfully');
-      fetchEmployees();
-    } catch {
-      showToast('Failed to delete employee', 'error');
-    }
-  };
-
-  const handleSubmit = async (formData) => {
-    try {
-      if (selectedEmployee) {
-        await employeeService.update(selectedEmployee.id, formData);
-        showToast('Employee updated successfully');
-      } else {
-        await employeeService.create(formData);
-        showToast('Employee added successfully');
-      }
-      setShowForm(false);
-      fetchEmployees();
-    } catch (err) {
-      const msg = err.response?.data?.email || err.response?.data?.error || 'Operation failed';
-      showToast(msg, 'error');
-    }
-  };
+  const isAdmin = user.role === 'admin';
 
   return (
     <div className="app">
-      {/* Header */}
-      <header className="header">
-        <div className="header-content">
-          <div>
-            <h1>👥 Employee Manager</h1>
-            <p>{employees.length} employee{employees.length !== 1 ? 's' : ''} total</p>
-          </div>
-          <button className="btn-primary" onClick={handleAdd}>+ Add Employee</button>
+      {/* ── Navbar ── */}
+      <nav className="navbar">
+        <div className="nav-brand">
+          <svg viewBox="0 0 40 40" fill="none" width="30" height="30">
+            <rect width="40" height="40" rx="10" fill="#e8ff47"/>
+            <path d="M20 8C14.477 8 10 12.477 10 18c0 3.536 1.82 6.646 4.572 8.485L13 32h14l-1.572-5.515A10 10 0 0020 8z" fill="#0d0d0d"/>
+            <circle cx="16" cy="17" r="2" fill="#e8ff47"/>
+            <circle cx="24" cy="17" r="2" fill="#e8ff47"/>
+          </svg>
+          <span>EmpManager</span>
         </div>
-      </header>
 
-      {/* Main */}
+        <div className="nav-right">
+          <span className={`role-pill role-pill--${user.role}`}>
+            {user.role.toUpperCase()}
+          </span>
+          <span className="nav-user">{user.username}</span>
+
+          {isAdmin && view === 'list' && (
+            <button className="nav-btn nav-btn--primary"
+              onClick={() => { setEditEmployee(null); setView('form'); }}>
+              + Add Employee
+            </button>
+          )}
+          <button className="nav-btn nav-btn--outline" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
+      </nav>
+
+      {/* ── Main ── */}
       <main className="main">
-        {/* Search */}
-        <div className="search-bar">
-          <input
-            type="text"
-            placeholder="🔍  Search by name..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+        {view === 'form' && isAdmin ? (
+          <EmployeeForm
+            employee={editEmployee}
+            onSave={()  => { setView('list'); setEditEmployee(null); }}
+            onCancel={() => { setView('list'); setEditEmployee(null); }}
           />
-        </div>
-
-        {/* Table */}
-        {loading ? (
-          <div className="loading">Loading employees...</div>
         ) : (
           <EmployeeTable
-            employees={employees}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
+            isAdmin={isAdmin}
+            onEdit={(emp) => { setEditEmployee(emp); setView('form'); }}
           />
         )}
       </main>
-
-      {/* Modal Form */}
-      {showForm && (
-        <EmployeeForm
-          employee={selectedEmployee}
-          onSubmit={handleSubmit}
-          onCancel={() => setShowForm(false)}
-        />
-      )}
-
-      {/* Toast */}
-      {toast && (
-        <div className={`toast toast-${toast.type}`}>
-          {toast.message}
-        </div>
-      )}
     </div>
   );
 }
+
+export default App;

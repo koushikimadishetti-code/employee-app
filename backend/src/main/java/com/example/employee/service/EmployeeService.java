@@ -1,8 +1,8 @@
 package com.example.employee.service;
 
-import com.example.employee.exception.ResourceNotFoundException;
 import com.example.employee.model.Employee;
 import com.example.employee.repository.EmployeeRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,50 +10,24 @@ import java.util.List;
 @Service
 public class EmployeeService {
 
-    private final EmployeeRepository employeeRepository;
+    @Autowired
+    private EmployeeRepository repo;
 
-    public EmployeeService(EmployeeRepository employeeRepository) {
-        this.employeeRepository = employeeRepository;
-    }
+    public List<Employee> getAll()                        { return repo.findAll(); }
+    public Employee getById(Long id)                      { return repo.findById(id).orElseThrow(); }
+    public Employee create(Employee e)                    { return repo.save(e); }
+    public void delete(Long id)                           { repo.deleteById(id); }
+    public List<Employee> search(String q)                { return repo.search(q); }
+    public List<Employee> byDepartment(String dept)       { return repo.findByDepartmentIgnoreCase(dept); }
 
-    public List<Employee> getAllEmployees() {
-        return employeeRepository.findAll();
-    }
-
-    public Employee getEmployeeById(Long id) {
-        return employeeRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id: " + id));
-    }
-
-    public Employee createEmployee(Employee employee) {
-        if (employeeRepository.existsByEmail(employee.getEmail())) {
-            throw new IllegalArgumentException("Email already in use: " + employee.getEmail());
-        }
-        return employeeRepository.save(employee);
-    }
-
-    public Employee updateEmployee(Long id, Employee updatedEmployee) {
-        Employee existing = getEmployeeById(id);
-        existing.setFirstName(updatedEmployee.getFirstName());
-        existing.setLastName(updatedEmployee.getLastName());
-        existing.setEmail(updatedEmployee.getEmail());
-        existing.setDepartment(updatedEmployee.getDepartment());
-        existing.setRole(updatedEmployee.getRole());
-        existing.setSalary(updatedEmployee.getSalary());
-        return employeeRepository.save(existing);
-    }
-
-    public void deleteEmployee(Long id) {
-        Employee existing = getEmployeeById(id);
-        employeeRepository.delete(existing);
-    }
-
-    public List<Employee> searchEmployees(String query) {
-        return employeeRepository
-                .findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(query, query);
-    }
-
-    public List<Employee> getByDepartment(String department) {
-        return employeeRepository.findByDepartment(department);
+    public Employee update(Long id, Employee updated) {
+        Employee existing = getById(id);
+        existing.setFirstName(updated.getFirstName());
+        existing.setLastName(updated.getLastName());
+        existing.setEmail(updated.getEmail());
+        existing.setDepartment(updated.getDepartment());
+        existing.setPosition(updated.getPosition());
+        existing.setPhone(updated.getPhone());
+        return repo.save(existing);
     }
 }

@@ -1,0 +1,78 @@
+.ef-wrap { display: flex; justify-content: center; }
+
+.ef-card {
+  width: 100%; max-width: 640px;
+  background: #fff;
+  border: 1.5px solid #e0e0d8;
+  border-radius: 16px;
+  padding: 36px 40px;
+}
+
+.ef-header { margin-bottom: 28px; }
+.ef-header h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.5rem; font-weight: 800; letter-spacing: -.5px;
+}
+.ef-header p { color: #888; font-size: .87rem; margin-top: 4px; }
+
+.ef-form { display: flex; flex-direction: column; gap: 18px; }
+
+.ef-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.ef-fg { display: flex; flex-direction: column; gap: 5px; }
+.ef-fg label {
+  font-size: .77rem; font-weight: 500;
+  text-transform: uppercase; letter-spacing: .6px;
+  color: #0d0d0d;
+}
+.ef-fg input, .ef-fg select {
+  padding: 12px 14px;
+  border: 1.5px solid #e0e0d8; border-radius: 9px;
+  font-family: 'DM Sans', sans-serif; font-size: .93rem;
+  color: #0d0d0d; background: #fff; outline: none;
+  transition: border-color .2s;
+}
+.ef-fg input:focus, .ef-fg select:focus { border-color: #0d0d0d; }
+.ef-fg input::placeholder { color: #ccc; }
+.ef-err { font-size: .78rem; color: #e53e3e; }
+
+.ef-err-box {
+  background: #fff0f0; border: 1px solid #fecaca;
+  color: #e53e3e; border-radius: 8px;
+  padding: 10px 14px; font-size: .85rem;
+}
+
+.ef-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+
+.ef-cancel {
+  padding: 12px 24px;
+  background: transparent; border: 1.5px solid #e0e0d8;
+  border-radius: 9px; font-family: 'DM Sans', sans-serif;
+  font-size: .9rem; font-weight: 500; cursor: pointer; color: #555;
+  transition: all .15s;
+}
+.ef-cancel:hover { border-color: #0d0d0d; color: #0d0d0d; }
+
+.ef-submit {
+  padding: 12px 28px;
+  background: #0d0d0d; color: #e8ff47;
+  border: none; border-radius: 9px;
+  font-family: 'Syne', sans-serif; font-size: .9rem; font-weight: 700;
+  cursor: pointer; transition: all .15s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.ef-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(13,13,13,.2); }
+.ef-submit:disabled { opacity: .6; cursor: not-allowed; }
+
+.ef-spin {
+  width: 16px; height: 16px;
+  border: 2px solid transparent; border-top-color: #e8ff47;
+  border-radius: 50%;
+  animation: espin .65s linear infinite; display: inline-block;
+}
+@keyframes espin { to{transform:rotate(360deg)} }
+
+@media(max-width:520px) {
+  .ef-card { padding: 24px 18px; }
+  .ef-row  { grid-template-columns: 1fr; }
+}

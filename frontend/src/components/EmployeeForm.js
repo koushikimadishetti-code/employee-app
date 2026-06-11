@@ -1,104 +1,108 @@
 import React, { useState, useEffect } from 'react';
+import { createEmployee, updateEmployee } from '../services/employeeService';
+import './EmployeeForm.css';
 
-const DEPARTMENTS = ['Engineering', 'HR', 'Marketing', 'Finance', 'Sales', 'Operations'];
-const ROLES = ['Manager', 'Developer', 'Analyst', 'Designer', 'Lead', 'Intern'];
+const DEPARTMENTS = ['Engineering','Marketing','Sales','HR','Finance','Design','Operations'];
 
-const EMPTY_FORM = {
-  firstName: '', lastName: '', email: '',
-  department: '', role: '', salary: ''
-};
-
-export default function EmployeeForm({ employee, onSubmit, onCancel }) {
-  const [form, setForm] = useState(EMPTY_FORM);
+const EmployeeForm = ({ employee, onSave, onCancel }) => {
+  const isEdit = !!employee;
+  const [form, setForm] = useState({
+    firstName: '', lastName: '', email: '',
+    department: '', position: '', phone: ''
+  });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (employee) {
-      setForm({ ...employee });
-    } else {
-      setForm(EMPTY_FORM);
-    }
+    if (employee) setForm({ ...employee });
   }, [employee]);
+
+  const set = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
 
   const validate = () => {
     const errs = {};
-    if (!form.firstName.trim()) errs.firstName = 'First name is required';
-    if (!form.lastName.trim()) errs.lastName = 'Last name is required';
-    if (!form.email.trim()) errs.email = 'Email is required';
+    if (!form.firstName.trim()) errs.firstName = 'Required';
+    if (!form.lastName.trim())  errs.lastName  = 'Required';
+    if (!form.email.trim())     errs.email     = 'Required';
     else if (!/\S+@\S+\.\S+/.test(form.email)) errs.email = 'Invalid email';
-    if (!form.department) errs.department = 'Department is required';
-    if (!form.role) errs.role = 'Role is required';
-    if (!form.salary || form.salary < 0) errs.salary = 'Valid salary required';
     return errs;
   };
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: '' });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const errs = validate();
-    if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-    onSubmit({ ...form, salary: parseFloat(form.salary) });
+    if (Object.keys(errs).length) { setErrors(errs); return; }
+    setLoading(true);
+    try {
+      if (isEdit) await updateEmployee(employee.id, form);
+      else        await createEmployee(form);
+      onSave();
+    } catch (err) {
+      const data = err.response?.data;
+      if (typeof data === 'object') setErrors(data);
+      else setErrors({ general: 'Save failed. Please try again.' });
+    } finally { setLoading(false); }
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
-        <h2>{employee ? 'Edit Employee' : 'Add Employee'}</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="form-row">
-            <div className="form-group">
-              <label>First Name</label>
-              <input name="firstName" value={form.firstName} onChange={handleChange} placeholder="John" />
-              {errors.firstName && <span className="error">{errors.firstName}</span>}
+    <div className="ef-wrap">
+      <div className="ef-card">
+        <div className="ef-header">
+          <h2>{isEdit ? 'Edit Employee' : 'Add New Employee'}</h2>
+          <p>{isEdit ? `Editing ${employee.firstName} ${employee.lastName}` : 'Fill in the details below'}</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="ef-form">
+          {errors.general && <div className="ef-err-box">{errors.general}</div>}
+
+          <div className="ef-row">
+            <div className="ef-fg">
+              <label>First Name *</label>
+              <input type="text" value={form.firstName} onChange={set('firstName')} placeholder="John"/>
+              {errors.firstName && <span className="ef-err">{errors.firstName}</span>}
             </div>
-            <div className="form-group">
-              <label>Last Name</label>
-              <input name="lastName" value={form.lastName} onChange={handleChange} placeholder="Doe" />
-              {errors.lastName && <span className="error">{errors.lastName}</span>}
+            <div className="ef-fg">
+              <label>Last Name *</label>
+              <input type="text" value={form.lastName} onChange={set('lastName')} placeholder="Doe"/>
+              {errors.lastName && <span className="ef-err">{errors.lastName}</span>}
             </div>
           </div>
 
-          <div className="form-group">
-            <label>Email</label>
-            <input name="email" value={form.email} onChange={handleChange} placeholder="john@company.com" />
-            {errors.email && <span className="error">{errors.email}</span>}
+          <div className="ef-fg">
+            <label>Email *</label>
+            <input type="email" value={form.email} onChange={set('email')} placeholder="john@company.com"/>
+            {errors.email && <span className="ef-err">{errors.email}</span>}
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
+          <div className="ef-row">
+            <div className="ef-fg">
               <label>Department</label>
-              <select name="department" value={form.department} onChange={handleChange}>
-                <option value="">Select...</option>
-                {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+              <select value={form.department} onChange={set('department')}>
+                <option value="">Select department</option>
+                {DEPARTMENTS.map(d => <option key={d}>{d}</option>)}
               </select>
-              {errors.department && <span className="error">{errors.department}</span>}
             </div>
-            <div className="form-group">
-              <label>Role</label>
-              <select name="role" value={form.role} onChange={handleChange}>
-                <option value="">Select...</option>
-                {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-              </select>
-              {errors.role && <span className="error">{errors.role}</span>}
+            <div className="ef-fg">
+              <label>Position</label>
+              <input type="text" value={form.position} onChange={set('position')} placeholder="Software Engineer"/>
             </div>
           </div>
 
-          <div className="form-group">
-            <label>Salary (₹)</label>
-            <input type="number" name="salary" value={form.salary} onChange={handleChange} placeholder="50000" />
-            {errors.salary && <span className="error">{errors.salary}</span>}
+          <div className="ef-fg">
+            <label>Phone</label>
+            <input type="tel" value={form.phone} onChange={set('phone')} placeholder="+91 9876543210"/>
           </div>
 
-          <div className="form-actions">
-            <button type="button" className="btn-secondary" onClick={onCancel}>Cancel</button>
-            <button type="submit" className="btn-primary">{employee ? 'Update' : 'Add'} Employee</button>
+          <div className="ef-actions">
+            <button type="button" className="ef-cancel" onClick={onCancel}>Cancel</button>
+            <button type="submit" className="ef-submit" disabled={loading}>
+              {loading ? <span className="ef-spin"/> : (isEdit ? 'Update Employee' : 'Add Employee')}
+            </button>
           </div>
         </form>
       </div>
     </div>
   );
-}
+};
+
+export default EmployeeForm;

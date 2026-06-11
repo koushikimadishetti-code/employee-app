@@ -1,31 +1,10 @@
-# 👥 Employee Manager — Java Full Stack App
+# 👥 Employee Manager — Full Stack App with Login
 
-A full-stack CRUD application built with **Spring Boot** (backend) + **React** (frontend) + **MySQL** (database).
-
----
-
-## 📁 Project Structure
-
-```
-employee-app/
-├── backend/          ← Spring Boot REST API (Java 17)
-│   └── src/main/java/com/example/employee/
-│       ├── model/          Employee.java
-│       ├── repository/     EmployeeRepository.java
-│       ├── service/        EmployeeService.java
-│       ├── controller/     EmployeeController.java
-│       └── exception/      GlobalExceptionHandler.java
-└── frontend/         ← React App
-    └── src/
-        ├── components/     EmployeeTable.js, EmployeeForm.js
-        ├── services/       employeeService.js
-        └── App.js
-```
+React + Spring Boot + MySQL | Admin & Employee Role Login
 
 ---
 
 ## ⚙️ Prerequisites
-
 - Java 17+
 - Maven 3.6+
 - Node.js 18+
@@ -33,58 +12,59 @@ employee-app/
 
 ---
 
-## 🗄️ Database Setup
+## 🗄️ Step 1 — Database Setup
 
 ```sql
 CREATE DATABASE employeedb;
 ```
 
-Then update `backend/src/main/resources/application.properties`:
-```properties
-spring.datasource.username=root
-spring.datasource.password=your_password_here
+Then open `backend/src/main/resources/application.properties` and set:
 ```
+spring.datasource.password=your_mysql_password
+```
+
+The app auto-creates all tables and seeds default users on first run.
 
 ---
 
-## 🚀 Running the App
+## 🚀 Step 2 — Run Backend
 
-### Backend (Spring Boot)
 ```bash
 cd backend
 mvn spring-boot:run
 ```
-API runs at: **http://localhost:8080**
+API runs at: http://localhost:8080
 
-### Frontend (React)
+---
+
+## 🚀 Step 3 — Run Frontend
+
 ```bash
 cd frontend
 npm install
 npm start
 ```
-App opens at: **http://localhost:3000**
+App opens at: http://localhost:3000
 
 ---
 
-## 🔗 REST API Endpoints
+## 🔑 Login Credentials
 
-| Method | URL                              | Description          |
-|--------|----------------------------------|----------------------|
-| GET    | /api/employees                   | Get all employees    |
-| GET    | /api/employees/{id}              | Get by ID            |
-| POST   | /api/employees                   | Create employee      |
-| PUT    | /api/employees/{id}              | Update employee      |
-| DELETE | /api/employees/{id}              | Delete employee      |
-| GET    | /api/employees/search?query=...  | Search by name       |
-| GET    | /api/employees/department/{dept} | Filter by department |
+| Role     | Username    | Password  |
+|----------|-------------|-----------|
+| Admin    | admin       | admin123  |
+| Employee | john.doe    | emp123    |
+| Employee | jane.smith  | emp123    |
 
 ---
 
 ## ✨ Features
 
-- ✅ Add, Edit, Delete employees
-- ✅ Search by name (real-time)
-- ✅ Form validation (frontend + backend)
-- ✅ Department badges with color coding
-- ✅ Toast notifications
-- ✅ Responsive design
+- Role-based login (Admin / Employee)
+- Admin: Add, Edit, Delete employees
+- Employee: Read-only view
+- Real-time search
+- Department badges
+- Toast notifications
+- Responsive design
+- Session persists on page reload

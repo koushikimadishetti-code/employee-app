@@ -3,7 +3,8 @@ package com.example.employee.controller;
 import com.example.employee.model.Employee;
 import com.example.employee.service.EmployeeService;
 import jakarta.validation.Valid;
-import org.springframework.http.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,45 +14,17 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000")
 public class EmployeeController {
 
-    private final EmployeeService employeeService;
+    @Autowired private EmployeeService service;
 
-    public EmployeeController(EmployeeService employeeService) {
-        this.employeeService = employeeService;
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Employee>> getAllEmployees() {
-        return ResponseEntity.ok(employeeService.getAllEmployees());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Employee> getEmployeeById(@PathVariable Long id) {
-        return ResponseEntity.ok(employeeService.getEmployeeById(id));
-    }
-
-    @PostMapping
-    public ResponseEntity<Employee> createEmployee(@Valid @RequestBody Employee employee) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.createEmployee(employee));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @Valid @RequestBody Employee employee) {
-        return ResponseEntity.ok(employeeService.updateEmployee(id, employee));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
-        employeeService.deleteEmployee(id);
-        return ResponseEntity.noContent().build();
-    }
+    @GetMapping              public List<Employee> getAll()                              { return service.getAll(); }
+    @GetMapping("/{id}")     public Employee getById(@PathVariable Long id)              { return service.getById(id); }
+    @PostMapping             public Employee create(@Valid @RequestBody Employee e)      { return service.create(e); }
+    @PutMapping("/{id}")     public Employee update(@PathVariable Long id, @Valid @RequestBody Employee e) { return service.update(id, e); }
+    @DeleteMapping("/{id}")  public ResponseEntity<Void> delete(@PathVariable Long id)  { service.delete(id); return ResponseEntity.noContent().build(); }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Employee>> searchEmployees(@RequestParam String query) {
-        return ResponseEntity.ok(employeeService.searchEmployees(query));
-    }
+    public List<Employee> search(@RequestParam String query) { return service.search(query); }
 
     @GetMapping("/department/{dept}")
-    public ResponseEntity<List<Employee>> getByDepartment(@PathVariable String dept) {
-        return ResponseEntity.ok(employeeService.getByDepartment(dept));
-    }
+    public List<Employee> byDept(@PathVariable String dept)  { return service.byDepartment(dept); }
 }
